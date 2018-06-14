@@ -5,7 +5,7 @@ import tempfile
 
 import ChromeREPL.ChromeREPLHelpers as ChromeREPLHelpers
 from ChromeREPL.ChromeREPLConnection import ChromeREPLConnection
-
+from subprocess import Popen, PIPE
 
 # Plugin teardown
 # ------------------------------------------------------------------------------
@@ -97,6 +97,29 @@ class ChromeReplConnectToTabCommand(sublime_plugin.WindowCommand):
   def run(self):
     connection = ChromeREPLConnection.get_instance(self.window.active_view())
     connection.connect_to_tab()
+
+
+class ChromeReplEvaluateCoffeeCommand(sublime_plugin.TextCommand):
+  HIGHLIGHT_KEY = 'chromerepl-eval-coffee'
+  HIGHLIGHT_SCOPE = 'chromerepl-eval-coffee'
+
+  def is_enabled(self):
+    return ChromeREPLConnection.is_instance_connected(self.view)
+
+  def run(self, edit):
+    connection = ChromeREPLConnection.get_instance(self.view)
+
+    try:
+      # convert window to coffeescript
+      expression = self.view.substr(sublime.Region(0, self.view.size()))
+      cscompiler = Popen(["coffee", "-bps"], stdin=PIPE, stdout=PIPE, universal_newlines=True)
+      expression = cscompiler.communicate(expression)[0]
+
+      # let 'er rip!
+      connection.execute(expression)
+    except Exception as e:
+      sublime.error_message("Failed to evaluate contents of coffeescript window")
+      return False
 
 
 class ChromeReplEvaluateCommand(sublime_plugin.TextCommand):

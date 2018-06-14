@@ -24,6 +24,10 @@
     "command": "chrome_repl_evaluate"
   },
   {
+    "caption": "Chrome REPL: Evaluate CoffeeScript",
+    "command": "chrome_repl_evaluate_coffee"
+  },
+  {
     "caption": "Chrome REPL: Clear Console",
     "command": "chrome_repl_clear"
   },

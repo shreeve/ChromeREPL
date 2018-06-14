@@ -122,7 +122,7 @@ class ChromeREPLConnection():
     if expression[-1] == ';':
       expression = expression[0:-1]
 
-    log_expression = 'console.{}(`%cST {}`, "color:{};", {})'.format(method,
+    log_expression = 'console.{}(`%c{}`, "color:{};", {})'.format(method,
                                                                      prefix,
                                                                      color,
                                                                      expression)
@@ -131,8 +131,8 @@ class ChromeREPLConnection():
   def execute(self, expression):
     try:
       # print the expression to the console as a string
-      print_expression = '`{}`'.format(expression)
-      self.chrome_print(expression=print_expression, prefix=' in:')
+      print_expression = '`{}`'.format("==[ Chrome ]== ") # expression)
+      self.chrome_print(expression=print_expression) # , prefix=' in:')
     except BrokenPipeError as e:
       print("broken pipe error")
 
@@ -173,7 +173,7 @@ class ChromeREPLConnection():
         print_text = '`{}`'.format(response['result']['exceptionDetails']['exception']['description'])
       elif 'description' in result.keys() and 'value' not in result.keys():
         method = 'log'
-        print_text = expression
+        print_text = '`{}`'.format(result['description']) # = expression
       elif 'value' in result.keys() and result['value'] is not None:
         method = 'log'
         template = '`"{}"`' if result['type'] == 'string' else '`{}`'
@@ -190,7 +190,7 @@ class ChromeREPLConnection():
         method = 'log'
         print_text = expression
 
-      self.chrome_print(expression=print_text, method=method, prefix='out:')
+      self.chrome_print(expression=print_text, method=method) # , prefix='out:')
 
   def reload(self, ignoreCache=False):
     self.chrome.Page.reload(args={'ignoreCache': ignoreCache})

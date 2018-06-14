@@ -131,7 +131,7 @@ class ChromeREPLConnection():
   def execute(self, expression):
     try:
       # print the expression to the console as a string
-      print_expression = '`{}`'.format("==[ Chrome ]== ") # expression)
+      print_expression = '`{}`'.format("\n==[ Chrome ]== ") # expression)
       self.chrome_print(expression=print_expression) # , prefix=' in:')
     except BrokenPipeError as e:
       print("broken pipe error")
@@ -173,7 +173,7 @@ class ChromeREPLConnection():
         print_text = '`{}`'.format(response['result']['exceptionDetails']['exception']['description'])
       elif 'description' in result.keys() and 'value' not in result.keys():
         method = 'log'
-        print_text = '`{}`'.format(result['description']) # = expression
+        print_text = '`\nResult:\n{}`'.format(result['description']) # = expression
       elif 'value' in result.keys() and result['value'] is not None:
         method = 'log'
         template = '`"{}"`' if result['type'] == 'string' else '`{}`'

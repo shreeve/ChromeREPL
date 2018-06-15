@@ -123,7 +123,7 @@ class ChromeReplEvaluateCoffeeCommand(sublime_plugin.TextCommand):
       js = compiler.communicate(coffee)[0]
 
       # wrap js in an awaitable function and then execute it
-      js = js + "\n(async (coffee) => { console.log(await coffee()) })(coffee)"
+      js = js + "\n(async (coffee) => { o = await coffee(); if (o !== undefined) console.log(o) })(coffee)"
       connection.execute(js)
     except Exception as e:
       sublime.error_message("Failed to evaluate contents of coffeescript window")

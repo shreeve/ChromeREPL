@@ -130,9 +130,7 @@ class ChromeREPLConnection():
 
   def execute(self, expression):
     try:
-      # print the expression to the console as a string
-      print_expression = '`{}`'.format("\n==[ Chrome ]== ") # expression)
-      self.chrome_print(expression=print_expression) # , prefix=' in:')
+      self.chrome_print(expression="`\n==[ Chrome ]==\n`")
     except BrokenPipeError as e:
       print("broken pipe error")
 
@@ -163,34 +161,6 @@ class ChromeREPLConnection():
     # evaluate the expression
     evaluate_expression = wrap_object_literal_expression_if_needed(expression)
     response = self.chrome_evaluate(evaluate_expression)
-
-    # print the result to the Chrome console as a string
-    if response is not None:
-      result = response['result']['result']
-
-      if 'exceptionDetails' in response['result'].keys():
-        method = 'error'
-        print_text = '`{}`'.format(response['result']['exceptionDetails']['exception']['description'])
-      elif 'description' in result.keys() and 'value' not in result.keys():
-        method = 'log'
-        print_text = '`\nResult:\n{}`'.format(result['description']) # = expression
-      elif 'value' in result.keys() and result['value'] is not None:
-        method = 'log'
-        template = '`"{}"`' if result['type'] == 'string' else '`{}`'
-        value = str(result['value']).lower() if result['type'] == 'boolean' else result['value']
-        print_text = template.format(value)
-      elif 'subtype' in result.keys():
-        method = 'log'
-        print_text = '`{}`'.format(result['subtype'])
-      elif 'type' in result.keys():
-        method = 'log'
-        print_text = '`{}`'.format(result['type'])
-      else:
-        # shouldn't reach here, included for debug
-        method = 'log'
-        print_text = expression
-
-      self.chrome_print(expression=print_text, method=method) # , prefix='out:')
 
   def reload(self, ignoreCache=False):
     self.chrome.Page.reload(args={'ignoreCache': ignoreCache})

@@ -2,6 +2,7 @@ import sublime
 import sublime_plugin
 import subprocess
 import tempfile
+import re
 
 import ChromeREPL.ChromeREPLHelpers as ChromeREPLHelpers
 from ChromeREPL.ChromeREPLConnection import ChromeREPLConnection
@@ -104,19 +105,26 @@ class ChromeReplEvaluateCoffeeCommand(sublime_plugin.TextCommand):
   HIGHLIGHT_SCOPE = 'chromerepl-eval-coffee'
 
   def is_enabled(self):
-    return ChromeREPLConnection.is_instance_connected(self.view)
+    if not ChromeREPLConnection.is_instance_connected(self.view):
+      connection = ChromeREPLConnection.get_instance(sublime.active_window().active_view())
+      connection.connect_to_tab()
+    return True
 
   def run(self, edit):
     connection = ChromeREPLConnection.get_instance(self.view)
 
     try:
-      # convert window to coffeescript
-      expression = self.view.substr(sublime.Region(0, self.view.size()))
-      cscompiler = Popen(["coffee", "-bps"], stdin=PIPE, stdout=PIPE, universal_newlines=True)
-      expression = cscompiler.communicate(expression)[0]
+      # wrap coffee in a function so we can get the return value
+      coffee = self.view.substr(sublime.Region(0, self.view.size()))
+      coffee = "coffee = ->\n" + re.sub(r'^', '  ', coffee, flags=re.M)
 
-      # let 'er rip!
-      connection.execute(expression)
+      # convert coffee to js
+      compiler = Popen(["coffee", "-bps"], stdin=PIPE, stdout=PIPE, universal_newlines=True)
+      js = compiler.communicate(coffee)[0]
+
+      # wrap js in an awaitable function and then execute it
+      js = js + "\n(async (coffee) => { console.log(await coffee()) })(coffee)"
+      connection.execute(js)
     except Exception as e:
       sublime.error_message("Failed to evaluate contents of coffeescript window")
       return False
